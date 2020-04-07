@@ -13,7 +13,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, RCTBridgeDelegate {
     client.add(FlipperKitNetworkPlugin(networkAdapter: SKIOSNetworkAdapter()))
   }
   #endif
-  public func runAtStart() {
+  public func runAtStart(application: UIApplication) {
     //No guaranteed thread
     guard !ranAtStart else { return }
     ranAtStart = true
@@ -21,11 +21,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, RCTBridgeDelegate {
     guard let classes = Bundle.main.infoDictionary!["RNSRClasses"] as? [String] else { return }
     classes.forEach() { c in
       if let cl  = NSClassFromString(c)  {
-        cl.runOnStart?()
+        cl.runOnStart?(application)
       } else {
         let fqn =  namespace + "." + c
         if let cl = NSClassFromString(fqn)  {
-          cl.runOnStart?()
+          cl.runOnStart?(application)
         }
       }
     }
@@ -34,7 +34,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, RCTBridgeDelegate {
   var cachedLaunchOptions: [UIApplicationLaunchOptionsKey: Any]? = nil
   //MARK: Lifecycle Management
   public func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
-    runAtStart()
+    runAtStart(application)
     cachedLaunchOptions = launchOptions
 
     #if DEBUG
@@ -91,7 +91,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, RCTBridgeDelegate {
   }
   //MARK:Shortcut Management
   public func application(_ application: UIApplication, performActionFor shortcutItem: UIApplicationShortcutItem, completionHandler: @escaping (Bool) -> Void) {
-    runAtStart()
+    runAtStart(application)
     RNSMainRegistry.setData(key: "shortcuttriggered", value: shortcutItem.type)
     RNSMainRegistry.setData(key: shortcutItem.type, value: shortcutItem.userInfo ?? [:])
     let ret = RNSMainRegistry.triggerEvent(type: shortcutItem.type, data: shortcutItem.userInfo ?? [:])
@@ -99,7 +99,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, RCTBridgeDelegate {
   }
   //MARK:URL Management
   public func application(_ app: UIApplication, open url: URL, options: [UIApplicationOpenURLOptionsKey : Any] = [:]) -> Bool {
-    runAtStart()
+    runAtStart(application)
     RNSMainRegistry.setData(key: "app.url", value:url)
     RNSMainRegistry.setData(key: "app.urlinfo", value: options)
     let ret = RNSMainRegistry.triggerEvent(type: "app.openedurl", data: url)
@@ -107,27 +107,27 @@ class AppDelegate: UIResponder, UIApplicationDelegate, RCTBridgeDelegate {
   }
   //MARK:Notification Management
   public func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-    runAtStart()
+    runAtStart(application)
     let _ = RNSMainRegistry.triggerEvent(type: "app.didRegisterForRemoteNotifications", data: deviceToken)
   }
   public func application(_ application: UIApplication, didRegister notificationSettings: UIUserNotificationSettings) {
-    runAtStart()
+    runAtStart(application)
     let _ = RNSMainRegistry.triggerEvent(type: "app.didRegisterUserNotificationSettings", data: notificationSettings)
   }
   public func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any]) {
-    runAtStart()
+    runAtStart(application)
     let _ = RNSMainRegistry.triggerEvent(type: "app.didReceiveRemoteNotification", data: userInfo)
   }
   public func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
-    runAtStart()
+    runAtStart(application)
     let _ = RNSMainRegistry.triggerEvent(type: "app.didFailToRegisterForRemoteNotifications", data: error)
   }
   public func application(_ application: UIApplication, didReceive notification: UILocalNotification) {
-    runAtStart()
+    runAtStart(application)
     let _ = RNSMainRegistry.triggerEvent(type: "app.didReceiveLocalNotification", data: notification)
   }
   public func application(_ application: UIApplication, handleEventsForBackgroundURLSession identifier: String, completionHandler: @escaping () -> Void) {
-    runAtStart()
+    runAtStart(application)
     let _ = RNSMainRegistry.triggerEvent(type: "app.handleEventsForBackgroundURLSession", data: ["identifier": identifier, "completionHandler": completionHandler])
   }
   func sourceURL(for bridge: RCTBridge!)->URL! {
