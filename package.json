@@ -1,0 +1,37 @@
+{
+  "name": "@react-native-advanced/core",
+  "version": "1.1.1",
+  "description": "Core registry for react-native-advanced packages",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rhdeck/react-native-advanced-core.git"
+  },
+  "keywords": [
+    "react-native",
+    "android",
+    "kotlin"
+  ],
+  "author": "Ray Deck",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rhdeck/react-native-advanced-core/issues"
+  },
+  "homepage": "https://github.com/rhdeck/react-native-advanced-core#readme",
+  "peerDependencies": {
+    "react-native": "^0.62.1"
+  },
+  "dependencies": {
+    "@raydeck/xcode": "^2.2.1",
+    "glob": "^7.1.6",
+    "hex-rgb": "^4.1.0",
+    "inquirer": "^7.1.0",
+    "plist": "^3.0.1",
+    "promote-peer-dependencies": "^1.6.1",
+    "rgb-hex": "^3.0.0",
+    "yarnif": "^1.4.0"
+  }
+}
