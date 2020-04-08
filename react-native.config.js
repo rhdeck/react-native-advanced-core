@@ -14,6 +14,7 @@ const inquirer = require("inquirer");
 const hexrgb = require("hex-rgb");
 const { spawnSync, execSync } = require("child_process");
 const plist = require("plist");
+const setSwiftBase = require("./lib/set-swift-base");
 module.exports = {
   commands: [
     {
@@ -122,7 +123,7 @@ module.exports = {
             }
             if (postlink) postlinks.push(postlink);
             if (startupClasses && startupClasses.length)
-              finalStartupClasses = [...finalStartupClasses, startupClasses];
+              finalStartupClasses = [...finalStartupClasses, ...startupClasses];
           }
         });
         //#region ios
@@ -138,6 +139,8 @@ module.exports = {
             o.RNSRClasses = finalStartupClasses;
             writeFileSync(pglob, plist.build(o));
           });
+          console.log("updating base");
+          setSwiftBase();
         }
         //#endregion
         postlinks.forEach((postlink) =>

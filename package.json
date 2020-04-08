@@ -25,6 +25,7 @@
     "react-native": "^0.62.1"
   },
   "dependencies": {
+    "@raydeck/react-native-utilities": "^1.0.2",
     "@raydeck/xcode": "^2.2.1",
     "glob": "^7.1.6",
     "hex-rgb": "^4.1.0",
