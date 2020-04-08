@@ -25,7 +25,7 @@ module.exports = {
         { name: "--android-only", description: "link android components only" },
         { name: "--skip-peers", description: "Skip linking peer dependencies" },
       ],
-      func: (_, __, { iosOnly, androidOnly, skipPeers }) => {
+      func: async (_, __, { iosOnly, androidOnly, skipPeers }) => {
         if (iosOnly && androidOnly) {
           console.error("ios-only and android-only are mutually exclusive");
           process.exit(1);
@@ -100,6 +100,7 @@ module.exports = {
         //find hooks
         let finalStartupClasses = [];
         let postlinks = [];
+        let prelinks = [];
         deps.forEach((dep) => {
           //find the package.json
           let packagePath;
@@ -120,13 +121,16 @@ module.exports = {
               advanced: { prelink, postlink, startupClasses } = {},
             } = require(kpath);
             if (prelink) {
-              prelink({ iosOnly, androidOnly, skipPeers });
+              prelinks.push(prelink);
             }
             if (postlink) postlinks.push(postlink);
             if (startupClasses && startupClasses.length)
               finalStartupClasses = [...finalStartupClasses, ...startupClasses];
           }
         });
+        for (const prelink of prelinks) {
+          await prelink({ iosOnly, androidOnly, skipPeers });
+        }
         //#region ios
         if (!androidOnly) {
           const pglobs = glob(join(process.cwd(), "ios", "*", "info.plist"));
@@ -142,9 +146,9 @@ module.exports = {
           });
         }
         //#endregion
-        postlinks.forEach((postlink) =>
-          postlink({ androidOnly, iosOnly, skipPeers })
-        );
+        for (const postlink of postlinks) {
+          await postlink({ androidOnly, iosOnly, skipPeers });
+        }
       },
     },
     {
