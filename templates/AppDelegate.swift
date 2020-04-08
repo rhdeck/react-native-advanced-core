@@ -13,7 +13,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, RCTBridgeDelegate {
     client.add(FlipperKitNetworkPlugin(networkAdapter: SKIOSNetworkAdapter()))
   }
   #endif
-  public func runAtStart(application: UIApplication) {
+  public func runAtStart(_ application: UIApplication) {
     //No guaranteed thread
     guard !ranAtStart else { return }
     ranAtStart = true
@@ -44,7 +44,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, RCTBridgeDelegate {
     let w = UIWindow(frame: UIScreen.main.bounds)
     let rvc = UIViewController()
     let bridge = RCTBridge(delegate: self, launchOptions: launchOptions)
-    rvc.view = RCTRootView(bridge: bridge!, moduleName: Bundle.main.infoDictionary![kCFBundleNameKey as String] as! String, initialProperties: nil)
+    let moduleName =  Bundle.main.infoDictionary!["RNAModule"] as? String ?? Bundle.main.infoDictionary![kCFBundleNameKey as String] as! String
+    RNSMainRegistry.setData("app.moduleName", moduleName)
+    RNSMainRegistry.triggerEvent("app.loadingModule")
+    moduleName = RNSMainRegistry.getData("app.moduleName") as! String
+    rvc.view = RCTRootView(bridge: bridge!, moduleName: moduleName, initialProperties: nil)
     if #available(iOS 13.0, *) {
       rvc.view.backgroundColor = .systemBackground
     } else {
@@ -57,7 +61,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, RCTBridgeDelegate {
         DispatchQueue.main.async {
           let rvc = UIViewController()
           guard let bridge = RCTBridge(delegate: self, launchOptions: launchOptions) else { return }
-          rvc.view = RCTRootView(bridge: bridge, moduleName: Bundle.main.infoDictionary![kCFBundleNameKey as String] as! String, initialProperties: nil)
+          RNSMainRegistry.triggerEvent("app.loadingModule")
+          let moduleName = RNSMainRegistry.getData("app.moduleName") as! String
+          rvc.view = RCTRootView(bridge: bridge, moduleName: moduleName, initialProperties: nil)
          if #available(iOS 13.0, *) {
             rvc.view.backgroundColor = .systemBackground
           } else {
@@ -99,11 +105,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate, RCTBridgeDelegate {
   }
   //MARK:URL Management
   public func application(_ app: UIApplication, open url: URL, options: [UIApplicationOpenURLOptionsKey : Any] = [:]) -> Bool {
-    runAtStart(application)
+    runAtStart(app)
     RNSMainRegistry.setData(key: "app.url", value:url)
     RNSMainRegistry.setData(key: "app.urlinfo", value: options)
     let ret = RNSMainRegistry.triggerEvent(type: "app.openedurl", data: url)
     return ret
+  }
+  public func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([Any]?) -> Void) -> Bool {
+    runAtStart(application)
+    let _ = RNSMainRegistry.triggerEvent(type: "app.continueActivity", data: ["userActivity": userActivity, "restorationHandler": restorationHandler])
   }
   //MARK:Notification Management
   public func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
@@ -130,6 +140,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, RCTBridgeDelegate {
     runAtStart(application)
     let _ = RNSMainRegistry.triggerEvent(type: "app.handleEventsForBackgroundURLSession", data: ["identifier": identifier, "completionHandler": completionHandler])
   }
+
   func sourceURL(for bridge: RCTBridge!)->URL! {
     let tempLocation:URL?
     if(_isDebugAssertConfiguration()) {
