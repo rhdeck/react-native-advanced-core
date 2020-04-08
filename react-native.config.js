@@ -89,6 +89,7 @@ module.exports = {
           execSync("(cd " + join(process.cwd(), "ios") + " && pod install)", {
             stdio: "inherit",
           });
+          setSwiftBase();
         }
         //#endregion
         //walk dependencies
@@ -139,8 +140,6 @@ module.exports = {
             o.RNSRClasses = finalStartupClasses;
             writeFileSync(pglob, plist.build(o));
           });
-          console.log("updating base");
-          setSwiftBase();
         }
         //#endregion
         postlinks.forEach((postlink) =>
