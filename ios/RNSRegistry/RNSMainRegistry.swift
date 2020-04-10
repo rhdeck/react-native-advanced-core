@@ -53,10 +53,10 @@ open class RNSMainRegistry {
         }
     }
     public class func getData(key: String) -> Any? {
-        return q.sync() {
+        // return q.sync() {
             if(data == nil) { data = loadData()}
             return data![key]
-        }
+        // }
     }
     public class func removeData(key: String) {
         let _ = q.sync() {
