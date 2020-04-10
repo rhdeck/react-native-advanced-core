@@ -13,8 +13,8 @@ const yarnif = require("yarnif");
 const inquirer = require("inquirer");
 const hexrgb = require("hex-rgb");
 const { spawnSync, execSync } = require("child_process");
-const plist = require("plist");
 const setSwiftBase = require("./lib/set-swift-base");
+const { ios, android } = require("@raydeck/react-native-utilities");
 module.exports = {
   commands: [
     {
@@ -24,13 +24,26 @@ module.exports = {
         { name: "--ios-only", description: "link ios project components only" },
         { name: "--android-only", description: "link android components only" },
         { name: "--skip-peers", description: "Skip linking peer dependencies" },
+        { name: "--skip-podlink", description: "Skip cocoapod linking" },
       ],
-      func: async (_, __, { iosOnly, androidOnly, skipPeers }) => {
-        if (iosOnly && androidOnly) {
+      func: async (
+        _,
+        __,
+        {
+          iosOnly,
+          androidOnly,
+          jsOnly,
+          skipPeers,
+          skipPodlink,
+          path = process.cwd(),
+        }
+      ) => {
+        if (!ios && androidOnly) {
           console.error("ios-only and android-only are mutually exclusive");
           process.exit(1);
         }
-        if (!skipPeers && promote(process.cwd())) yarnif.install();
+        const doIos = !androidOnly && !jsOnly;
+        const doAndroid = !iosOnly && !jsOnly;
         //#region android
         if (!iosOnly) {
           //replace MainApplication.java
@@ -85,10 +98,15 @@ module.exports = {
         }
         //#endregion
         //#region ios predeps
-        if (!androidOnly) {
-          execSync("(cd " + join(process.cwd(), "ios") + " && pod install)", {
-            stdio: "inherit",
-          });
+        if (doIos) {
+          if (!skipPodlink) {
+            console.log("Linking pods");
+            execSync("(cd " + join(process.cwd(), "ios") + " && pod install)", {
+              stdio: "inherit",
+            });
+          } else console.log("Skipping podlink");
+
+          console.log("Checking AppDelegate base");
           setSwiftBase();
         }
         //#endregion
@@ -98,9 +116,7 @@ module.exports = {
         );
         const deps = Object.keys({ ...dependencies, ...devDependencies });
         //find hooks
-        let finalStartupClasses = [];
-        let postlinks = [];
-        let prelinks = [];
+        let depinfo = [];
         deps.forEach((dep) => {
           //find the package.json
           let packagePath;
@@ -115,39 +131,56 @@ module.exports = {
               path = join(path, "..");
             }
           }
+
           const kpath = join(packagePath, "react-native.config.js");
           if (existsSync(kpath)) {
+            // const thisDepInfo = {}
             const {
               advanced: { prelink, postlink, startupClasses } = {},
             } = require(kpath);
-            if (prelink) {
-              prelinks.push(prelink);
-            }
-            if (postlink) postlinks.push(postlink);
-            if (startupClasses && startupClasses.length)
-              finalStartupClasses = [...finalStartupClasses, ...startupClasses];
+            depinfo.push({
+              packagePath,
+              prelink,
+              postlink,
+              startupClasses,
+              name: dep,
+            });
           }
         });
-        for (const prelink of prelinks) {
-          await prelink({ iosOnly, androidOnly, skipPeers });
+        if (!skipPeers) {
+          console.log("Promoting peer dependencies");
+          if (
+            depinfo
+              .map(({ packagePath }) =>
+                promote(packagePath, process.cwd(), false)
+              )
+              .filter(Boolean).length
+          )
+            yarnif.install();
+        } else console.log("Skipping peer dependencies");
+
+        const finalStartupClasses = depinfo
+          .flatMap(({ startupClasses }) => startupClasses)
+          .filter(Boolean);
+        for (const { prelink, name } of depinfo) {
+          if (prelink) {
+            console.log("Running prelink for " + name);
+            await prelink({ iosOnly, androidOnly, jsOnly, skipPeers, path });
+          }
         }
         //#region ios
-        if (!androidOnly) {
-          const pglobs = glob(join(process.cwd(), "ios", "*", "info.plist"));
-          if (!pglobs) {
-            console.log("Could not find the plist file");
-            return;
-          }
-          pglobs.forEach((pglob) => {
-            const txt = readFileSync(pglob, { encoding: "UTF8" });
-            const o = plist.parse(txt);
-            o.RNSRClasses = finalStartupClasses;
-            writeFileSync(pglob, plist.build(o));
-          });
+        if (doIos) {
+          console.log(
+            "Updating startup classes (" + finalStartupClasses.join(",") + ")"
+          );
+          ios.setPlistValue("RNSRClasses", finalStartupClasses);
         }
         //#endregion
-        for (const postlink of postlinks) {
-          await postlink({ androidOnly, iosOnly, skipPeers });
+        for (const { postlink, name } of depinfo) {
+          if (postlink) {
+            console.log("Running postlink for " + name);
+            await postlink({ androidOnly, iosOnly, skipPeers, jsOnly, path });
+          }
         }
       },
     },
