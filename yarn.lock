@@ -339,10 +339,10 @@
     mustache "^4.0.1"
     plist "^3.0.1"
 
-"@raydeck/walk-dependencies@^1.0.0":
-  version "1.6.1"
-  resolved "https://registry.yarnpkg.com/@raydeck/walk-dependencies/-/walk-dependencies-1.6.1.tgz#6eb2c299a43155a66e43d77a9210493458c27a6a"
-  integrity sha512-Ktwf9yOh5bzAKb4RHUkB64h3zrJTCjInHVHUWZ2qgIgFzn8OwYsI8mTDuolS3b66QlOyobKi0CxxErvHW2JxXA==
+"@raydeck/walk-dependencies@^1.6.2":
+  version "1.6.2"
+  resolved "https://registry.yarnpkg.com/@raydeck/walk-dependencies/-/walk-dependencies-1.6.2.tgz#ed07350c013c3def971271061ba5bd4db1854498"
+  integrity sha512-O0oUTelNGGy/hxK0QGSxoUbLpWwBgPP+MJNiRBrO7AzG2py17GkEQHb7m812kJUTMn7m5lwOtZuS4lXol79n0Q==
 
 "@raydeck/xcode@^2.2.1":
   version "2.2.1"
@@ -808,12 +808,12 @@ process@~0.5.1:
   resolved "https://registry.yarnpkg.com/process/-/process-0.5.2.tgz#1638d8a8e34c2f440a91db95ab9aeb677fc185cf"
   integrity sha1-FjjYqONML0QKkduVq5rrZ3/Bhc8=
 
-promote-peer-dependencies@^1.6.1:
-  version "1.6.1"
-  resolved "https://registry.yarnpkg.com/promote-peer-dependencies/-/promote-peer-dependencies-1.6.1.tgz#5695fd44d908cdc1582635322aa18f7bc33a328f"
-  integrity sha512-tHY4G1hE0QuvXU2+Jnd564ZCL+8Au9AXGTTPTCpgUtGzXd/kK86I41/9/XWf1Z/GbzQUq4vxjS51lbTjY2dgLw==
+promote-peer-dependencies@^1.7.0:
+  version "1.7.0"
+  resolved "https://registry.yarnpkg.com/promote-peer-dependencies/-/promote-peer-dependencies-1.7.0.tgz#1152e89d9082a529e9ffd69d0913c3f6b488bd25"
+  integrity sha512-/RfXGDs6coD/K0/wZhSPdyXpB76ZLo2jSfn5qpvGINnByXW2bbvMGuxS9+dUqXmq9tnZoR0Kd/smIpxXpg1uCA==
   dependencies:
-    "@raydeck/walk-dependencies" "^1.0.0"
+    "@raydeck/walk-dependencies" "^1.6.2"
     commander "^2.13.0"
     yarnif "^1.4.0"
 
