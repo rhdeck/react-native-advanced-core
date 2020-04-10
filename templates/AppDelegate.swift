@@ -44,10 +44,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, RCTBridgeDelegate {
     let w = UIWindow(frame: UIScreen.main.bounds)
     let rvc = UIViewController()
     let bridge = RCTBridge(delegate: self, launchOptions: launchOptions)
-    let moduleName =  Bundle.main.infoDictionary!["RNAModule"] as? String ?? Bundle.main.infoDictionary![kCFBundleNameKey as String] as! String
-    RNSMainRegistry.setData("app.moduleName", moduleName)
-    RNSMainRegistry.triggerEvent("app.loadingModule")
-    moduleName = RNSMainRegistry.getData("app.moduleName") as! String
+    var moduleName =  Bundle.main.infoDictionary!["RNAModule"] as? String ?? Bundle.main.infoDictionary![kCFBundleNameKey as String] as! String
+    RNSMainRegistry.setData(key: "app.moduleName", value: moduleName)
+    let _ = RNSMainRegistry.triggerEvent( type: "app.loadingModule", data: [:])
+    moduleName = RNSMainRegistry.getData(key: "app.moduleName") as! String
     rvc.view = RCTRootView(bridge: bridge!, moduleName: moduleName, initialProperties: nil)
     if #available(iOS 13.0, *) {
       rvc.view.backgroundColor = .systemBackground
@@ -61,8 +61,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, RCTBridgeDelegate {
         DispatchQueue.main.async {
           let rvc = UIViewController()
           guard let bridge = RCTBridge(delegate: self, launchOptions: launchOptions) else { return }
-          RNSMainRegistry.triggerEvent("app.loadingModule")
-          let moduleName = RNSMainRegistry.getData("app.moduleName") as! String
+          let _ = RNSMainRegistry.triggerEvent(type:"app.loadingModule", data: [:])
+          let moduleName = RNSMainRegistry.getData(key: "app.moduleName") as! String
           rvc.view = RCTRootView(bridge: bridge, moduleName: moduleName, initialProperties: nil)
          if #available(iOS 13.0, *) {
             rvc.view.backgroundColor = .systemBackground
@@ -113,7 +113,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, RCTBridgeDelegate {
   }
   public func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([Any]?) -> Void) -> Bool {
     runAtStart(application)
-    let _ = RNSMainRegistry.triggerEvent(type: "app.continueActivity", data: ["userActivity": userActivity, "restorationHandler": restorationHandler])
+    return !RNSMainRegistry.triggerEvent(type: "app.continueActivity", data: ["userActivity": userActivity, "restorationHandler": restorationHandler])
   }
   //MARK:Notification Management
   public func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
@@ -142,12 +142,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, RCTBridgeDelegate {
   }
 
   func sourceURL(for bridge: RCTBridge!)->URL! {
-    let tempLocation:URL?
-    if(_isDebugAssertConfiguration()) {
-      tempLocation = RCTBundleURLProvider.sharedSettings().jsBundleURL(forBundleRoot: "index", fallbackResource: nil)
-    } else {
-      tempLocation = Bundle.main.url(forResource:"main", withExtension:"jsbundle")
-    }
+    #if DEBUG
+    let tempLocation = RCTBundleURLProvider.sharedSettings().jsBundleURL(forBundleRoot: "index", fallbackResource: nil)
+    #else
+    let tempLocation = Bundle.main.url(forResource:"main", withExtension:"jsbundle")
+    #endif
     RNSMainRegistry.setData(key: "sourceURL", value: tempLocation?.absoluteString ?? "")
     let _ = RNSMainRegistry.triggerEvent(type: "app.getSourceURL",data: ["bridge":bridge])
     let urlString = RNSMainRegistry.getData(key: "sourceURL") as? String
@@ -157,5 +156,5 @@ class AppDelegate: UIResponder, UIApplicationDelegate, RCTBridgeDelegate {
 //Helper to give the runOnStart hint for AnyClass
 @objc(startable)
 class startable:NSObject {
-  @objc class func runOnStart() {}
+  @objc class func runOnStart(_ application:UIApplication) {}
 }
