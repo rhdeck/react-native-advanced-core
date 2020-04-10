@@ -31,7 +31,7 @@
     "hex-rgb": "^4.1.0",
     "inquirer": "^7.1.0",
     "plist": "^3.0.1",
-    "promote-peer-dependencies": "^1.6.1",
+    "promote-peer-dependencies": "^1.7.0",
     "rgb-hex": "^3.0.0",
     "yarnif": "^1.4.0"
   }
