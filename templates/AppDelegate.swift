@@ -11,6 +11,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, RCTBridgeDelegate {
     client.add(FKUserDefaultsPlugin(suiteName: nil))
     client.add(FlipperKitReactPlugin())
     client.add(FlipperKitNetworkPlugin(networkAdapter: SKIOSNetworkAdapter()))
+    client.start()
   }
   #endif
   public func runAtStart(_ application: UIApplication) {
