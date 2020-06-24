@@ -90,7 +90,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, RCTBridgeDelegate {
   }
   
   func applicationDidBecomeActive(_ application: UIApplication) {
-    let _ = RNSMainRegistry.triggerEvent(type: "app.didbecomeactive", data: [:])
+    let _ = RNSMainRegistry.triggerEvent(type: "app.didBecomeActive", data: [:])
   }
   
   func applicationWillTerminate(_ application: UIApplication) {
@@ -108,8 +108,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, RCTBridgeDelegate {
   public func application(_ app: UIApplication, open url: URL, options: [UIApplicationOpenURLOptionsKey : Any] = [:]) -> Bool {
     runAtStart(app)
     RNSMainRegistry.setData(key: "app.url", value:url)
-    RNSMainRegistry.setData(key: "app.urlinfo", value: options)
-    let ret = RNSMainRegistry.triggerEvent(type: "app.openedurl", data: url)
+    RNSMainRegistry.setData(key: "app.urlInfo", value: options)
+    let ret = RNSMainRegistry.triggerEvent(type: "app.openedUrl", data: url)
     return ret
   }
   public func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([Any]?) -> Void) -> Bool {
